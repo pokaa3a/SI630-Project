@@ -1,0 +1,4 @@
+data/
+vocab.txt
+embedding_fastText.txt
+*.pyc
