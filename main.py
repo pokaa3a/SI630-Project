@@ -9,7 +9,7 @@ EVAL_DIR = 'data/gold_data/'
 TRIAL_DIR = 'data/trial_dir/trial_data/' 
 TRAIN_DIR = 'data/train_dir/train_data/'
 
-def train(train_sentences, test_sentences, embeddings, epochs, batch_size):
+def train(train_sentences, trial_sentences, test_sentences, embeddings, epochs, batch_size):
 
 	with tf.Session() as sess:
 		model = CNN(sess)
@@ -30,8 +30,14 @@ def train(train_sentences, test_sentences, embeddings, epochs, batch_size):
 				offset += size
 
 				# testing
+				idx = range(len(trial_sentences[1]))
+				trial_x, trial_y = indices_to_vectors(idx, trial_sentences, embeddings)
+				print 'Trial - ',
+				model.test(trial_x, trial_y)
+
 				idx = range(len(test_sentences[1]))
 				test_x, test_y = indices_to_vectors(idx, test_sentences, embeddings)
+				print 'Test - ',
 				model.test(test_x, test_y)
 
 if __name__ == '__main__':
@@ -43,11 +49,12 @@ if __name__ == '__main__':
 
 	# categorize sentence by their labels
 	train_sentences = {0:[], 1:[]}
+	trial_sentences = {0:[], 1:[]}
 	test_sentences = {0:[], 1:[]}
 	for x,y in zip(train_x, train_y):
 		train_sentences[1 if y > 0 else 0].append(x)
 	for x,y in zip(trial_x, trial_y):
-		train_sentences[1 if y > 0 else 0].append(x)
+		trial_sentences[1 if y > 0 else 0].append(x)
 	for x,y in zip(eval_x, eval_y):
 		test_sentences[1 if y > 0 else 0].append(x)
 
@@ -60,5 +67,5 @@ if __name__ == '__main__':
 			embeddings[word] = np.array(vector)
 
 	# training
-	train(train_sentences, test_sentences, embeddings, 10, 20)
+	train(train_sentences, trial_sentences, test_sentences, embeddings, 10, 20)
 
