@@ -12,7 +12,7 @@ TRAIN_DIR = 'data/train_dir/train_data/'
 def train(train_sentences, trial_sentences, test_sentences, embeddings, epochs, batch_size):
 
 	with tf.Session() as sess:
-		model = CNN(sess)
+		model = CNN(sess, 16)
 		model.init()
 
 		for e in range(epochs):
@@ -26,7 +26,7 @@ def train(train_sentences, trial_sentences, test_sentences, embeddings, epochs, 
 				size = min(nData-offset, batch_size/2)
 				idx = range(offset, offset+size)
 				batch_x, batch_y = indices_to_vectors(idx, train_sentences, embeddings)
-				model.train(batch_x, batch_y,0.01-e*0.001)
+				model.train(batch_x, batch_y,0.005)
 				offset += size
 
 				# testing
