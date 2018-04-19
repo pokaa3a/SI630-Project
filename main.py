@@ -9,11 +9,12 @@ EVAL_DIR = 'data/gold_data/'
 TRIAL_DIR = 'data/trial_dir/trial_data/' 
 TRAIN_DIR = 'data/train_dir/train_data/'
 
-def train(train_sentences, trial_sentences, test_sentences, embeddings, epochs, batch_size):
+def train(train_sentences, trial_sentences, test_sentences, embeddings, epochs, batch_size, checkpoint_dir):
 
 	with tf.Session() as sess:
 		model = CNN(sess, 16)
 		model.init()
+
 
 		for e in range(epochs):
 			print 'Epoch: {}'.format(e)
@@ -21,7 +22,7 @@ def train(train_sentences, trial_sentences, test_sentences, embeddings, epochs, 
 			offset = 0
 
 			# training
-			progress = 0.0
+			highest_accuracy = 0.5
 			while offset < nData:
 				size = min(nData-offset, batch_size/2)
 				idx = range(offset, offset+size)
@@ -33,12 +34,24 @@ def train(train_sentences, trial_sentences, test_sentences, embeddings, epochs, 
 				idx = range(len(trial_sentences[1]))
 				trial_x, trial_y = indices_to_vectors(idx, trial_sentences, embeddings)
 				print 'Trial - ',
-				model.test(trial_x, trial_y)
+				accuracy = model.test(trial_x, trial_y)
 
-				idx = range(len(test_sentences[1]))
-				test_x, test_y = indices_to_vectors(idx, test_sentences, embeddings)
-				print 'Test - ',
-				model.test(test_x, test_y)
+				if accuracy > highest_accuracy:
+					model.save(checkpoint_dir)
+
+				# idx = range(len(test_sentences[1]))
+				# test_x, test_y = indices_to_vectors(idx, test_sentences, embeddings)
+				# print 'Test - ',
+				# print model.test(test_x, test_y)
+
+def test(sentences, embeddings, checkpoint_dir):
+	with tf.Session() as sess:
+		model = CNN(sess, 16)
+		model.load(checkpoint_dir)
+
+		idx = range(len(sentences[1]))
+		text_x, text_y = indices_to_vectors(idx, sentences, embeddings)
+		return model.predict(test_x), test_y
 
 if __name__ == '__main__':
 
@@ -51,6 +64,7 @@ if __name__ == '__main__':
 	train_sentences = {0:[], 1:[]}
 	trial_sentences = {0:[], 1:[]}
 	test_sentences = {0:[], 1:[]}
+
 	for x,y in zip(train_x, train_y):
 		train_sentences[1 if y > 0 else 0].append(x)
 	for x,y in zip(trial_x, trial_y):
@@ -68,4 +82,4 @@ if __name__ == '__main__':
 
 	# training
 	train(train_sentences, trial_sentences, test_sentences, embeddings, 10, 20)
-
+	# test(trial_sentences, test_sentences, embeddings)

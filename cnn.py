@@ -103,18 +103,20 @@ class CNN(object):
 	def test(self, x_test, y_test):
 		matches = tf.equal(tf.argmax(self.y_pred,1), tf.argmax(self.y,1))
 		accuracy = tf.reduce_mean(tf.cast(matches, tf.float32))
-		print 'Accuracy:',
-		print self.sess.run(accuracy, feed_dict={self.x:x_test, self.y:y_test, self.hold_prob:1.0})
+		# print 'Accuracy:',
+		return self.sess.run(accuracy, feed_dict={self.x:x_test, self.y:y_test, self.hold_prob:1.0})
 
-	def save(self, step):
-		model_name = 'cnn.model'
-		checkpoint_dir = 'checkpoint'
+	def predict(self, x):
+		return self.sess.run(self.y_pred_prob, feed_dict={self.x: x, self.y: np.array([1,0]).reshape([1,2]), self.hold_prob:1.0})
+
+	def save(self, checkpoint_dir):
+		model_name = 'model'
 		if not os.path.exists(checkpoint_dir):
 			os.makedirs(checkpoint_dir)
-		self.saver.save(self.sess, os.path.join(checkpoint_dir, model_name), global_step=step)
+		self.saver.save(self.sess, os.path.join(checkpoint_dir, model_name), global_step=0)
 
-	def load(self):
-		checkpoint_dir = 'checkpoint'
+	def load(self, checkpoint_dir):
+		# checkpoint_dir = 'checkpoint'
 		ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
 		if ckpt and ckpt.model_checkpoint_path:
 			ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
